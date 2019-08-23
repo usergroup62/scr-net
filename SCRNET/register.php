@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Registrate en SCR-NET</title>
+    <title>Registrate en porfi</title>
 
     <link href="css/vendor/all.css" rel="stylesheet">
     <link href="css/app/app.css" rel="stylesheet">
