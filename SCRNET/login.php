@@ -13,7 +13,7 @@ if(isset($_COOKIE['PHP7SESSION'])){
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="">
   <meta name="author" content="">
-  <title>Incia sesión en SCR-NET</title>
+  <title>Incia sesión porfi</title>
     
     <link rel="SCR-NET by Gatosan Software" type="image/x-icon" href="favicon.ico"/>
 
