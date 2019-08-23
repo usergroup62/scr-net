@@ -1,63 +1,71 @@
 <?php
 include_once( 'conf.php' );
 include_once( 'comments.php' );
-if (isset( $_POST[ 'action' ] ) ) {
+if ( isset( $_POST[ 'action' ] ) ) {
     switch ( $_POST[ 'action' ] ) {
         case "post":
-            if ( !isset( $_POST[ 'id' ] ) ) {
-                post( base64_decode( $_COOKIE[ 'PHP7SESSION' ] ) );
+            if ( !isset( $_POST[ 'media' ] ) ) {
+                if ( !isset( $_POST[ 'id' ] ) ) {
+                    post( base64_decode( $_COOKIE[ 'PHP7SESSION' ] ) );
+                } else {
+                    post( $_POST[ 'id' ] );
+                }
             } else {
-                post( $_POST[ 'id' ] );
+                postmedia( base64_decode( $_COOKIE[ 'PHP7SESSION' ] ) );
             }
+
             break;
         case "edit":
-            $id = $_POST['id_post'];
-            $post = $_POST['post'];
-            editpost($id,$post);
+            $id = $_POST[ 'id_post' ];
+            $post = $_POST[ 'post' ];
+            editpost( $id, $post );
             break;
         case "del":
-            $id = $_POST['id_post'];
-            delpost($id);
+            $id = $_POST[ 'id_post' ];
+            delpost( $id );
             break;
     }
 }
 if ( isset( $_POST[ 'id' ] ) ) {
 
 }
-if ( !isset( $_POST[ 'id' ] ) && !isset($_POST[ 'action' ]  )) {
+if ( !isset( $_POST[ 'id' ] ) && !isset( $_POST[ 'action' ] ) ) {
     //GetMyMural();
 }
 if ( !isset( $_POST[ 'action' ] ) && isset( $_POST[ 'id' ] ) ) {
     //GetMural($_POST['id']);
 }
-function postedbyme($id,$id_post){
+
+function postedbyme( $id, $id_post ) {
     $sqlquery = "SELECT * FROM post WHERE poster='{$id}' AND id_post='{$id_post}';";
-    $rd = mysqli_query(getDB(),$sqlquery);
-    while($ar=mysqli_fetch_array($rd)){
+    $rd = mysqli_query( getDB(), $sqlquery );
+    while ( $ar = mysqli_fetch_array( $rd ) ) {
         return true;
     }
     return false;
 }
-function delpost($id_post){
-    if ( strcmp( $id_post, "" ) != 0) {
+
+function delpost( $id_post ) {
+    if ( strcmp( $id_post, "" ) != 0 ) {
         $instruccion = "delete from post where id_post='{$id_post}';";
-        $r2 = mysqli_query(getDB(), $instruccion );
+        $r2 = mysqli_query( getDB(), $instruccion );
         $instruccion2 = "delete from comment where id_post_com='{$id_post}';";
-        $r = mysqli_query(getDB(), $instruccion2 );
+        $r = mysqli_query( getDB(), $instruccion2 );
         echo '¡Publicación Eliminada!';
     } else {
-        echo "Faltan datos!"; 
+        echo "Faltan datos!";
     }
 
 }
-function editpost($id_post,$new_post){
-    if ( strcmp( $id_post, "" ) != 0) {
-        $instruccion="Update post set post='".$new_post."' where 
-id_post=".$id_post.";";
-        $r2 = mysqli_query(getDB(), $instruccion );
+
+function editpost( $id_post, $new_post ) {
+    if ( strcmp( $id_post, "" ) != 0 ) {
+        $instruccion = "Update post set post='" . $new_post . "' where 
+id_post=" . $id_post . ";";
+        $r2 = mysqli_query( getDB(), $instruccion );
         echo '¡Publicación Editada!';
     } else {
-        echo "Faltan datos!"; 
+        echo "Faltan datos!";
     }
 }
 
@@ -74,12 +82,27 @@ function post( $to_post ) {
 
 }
 
+function postmedia( $to_post ) {
+    $my_id = base64_decode( $_COOKIE[ 'PHP7SESSION' ] );
+    $post = $_POST[ 'post_text' ];
+    $media = $_POST[ 'media' ];
+    if ( strcmp( $my_id, "" ) != 0 ) {
+        $sqlquery = "INSERT INTO post(owner,poster,post,date,media) SELECT '{$to_post}','{$my_id}','{$post}',DATE_FORMAT(NOW(),'%d/%m/%Y') as datetoday,'{$media}';";
+        $r = mysqli_query( getDB(), $sqlquery );
+        echo '¡Publicado!';
+    } else {
+        echo "El nombre no puede quedar vacio";
+    }
+
+}
+
 function GetMyMural() {
     $id_me = base64_decode( $_COOKIE[ 'PHP7SESSION' ] );
     echo '<div class="timeline row" data-toggle="isotope">
               <div class="col-xs-12 col-md-6 col-lg-4 item">
                 <div class="timeline-block">
                   <div class="panel panel-default share clearfix-xs">
+                   <input type="file" name="fileToUpload" id="fileToUpload">
                     <div class="panel-heading panel-heading-gray title">
                       ¿Qué hay de nuevo?
                     </div>
@@ -88,6 +111,8 @@ function GetMyMural() {
                     </div>
                     <div class="panel-footer share-buttons">
                       <button type="submit" onClick=post(' . $id_me . ') class="btn btn-primary btn-xs pull-right display-none" href="#">Publicar</button>
+<input type=hidden name="defphoto" id="defphoto" value="upload/default.jpg">
+<button type="submit" id="upload" class="btn btn-primary btn-xs pull-left display-none" href="#">Subir imagen</button>
                     </div>
                   </div>
                 </div>
@@ -108,7 +133,7 @@ function GetMyMural() {
         $sqlcomment = "SELECT id_comment,profile.id_profile,profile.name,profile.lastname,profile.photo,comment.date,comment.comment FROM comment INNER JOIN profile ON profile.id_profile=comment.id_commenter WHERE id_post_com='{$id_post}';";
         //
         if ( strtr( $poster, $id_me ) == 0 ) {
-            if(postedbyme($id_me,$id_post)){
+            if ( postedbyme( $id_me, $id_post ) ) {
                 echo ' <div class="col-xs-12 col-md-6 col-lg-4 item">
                 <div class="timeline-block">
                   <div class="panel panel-default">
@@ -138,22 +163,23 @@ function GetMyMural() {
                               <i class="fa fa-pencil"></i>
                             </a>
                             <ul class="dropdown-menu" role="menu">
-                              <li><a href="#" OnClick="editpost('.$id_post.')">Editar</a></li>
-                              <li><a href="#" OnClick="delpost('.$id_post.')">Eliminar</a></li>
+                              <li><a href="#" OnClick="editpost(' . $id_post . ')">Editar</a></li>
+                              <li><a href="#" OnClick="delpost(' . $id_post . ')">Eliminar</a></li>
                             </ul>
-                          </div>
-                      <!--<div class="timeline-added-images">
-                        <img src="images/social/100/1.jpg" width="80" alt="photo" />
-                        <img src="images/social/100/2.jpg" width="80" alt="photo" />
-                        <img src="images/social/100/3.jpg" width="80" alt="photo" />
-                      </div>-->
+                          </div>';
+                if (strcmp($media,"ada")){
+                   echo'
+                      <img src="'.$media.'" class="img-responsive">'; 
+                }
+                
+                echo'
                     </div>
                     <div class="view-all-comments">
                       <a href="#">
                         <i class="fa fa-comments-o"></i> Comentarios
                       </a>
                     </div>';
-            }else{
+            } else {
                 echo ' <div class="col-xs-12 col-md-6 col-lg-4 item">
                 <div class="timeline-block">
                   <div class="panel panel-default">
@@ -183,7 +209,7 @@ function GetMyMural() {
                               <i class="fa fa-pencil"></i>
                             </a>
                             <ul class="dropdown-menu" role="menu">
-                              <li><a href="#" OnClick="delpost('.$id_post.')">Eliminar</a></li>
+                              <li><a href="#" OnClick="delpost(' . $id_post . ')">Eliminar</a></li>
                             </ul>
                           </div>
                       <!--<div class="timeline-added-images">
@@ -198,7 +224,7 @@ function GetMyMural() {
                       </a>
                     </div>';
             }
-            
+
         } else {
             echo ' <div class="col-xs-12 col-md-6 col-lg-4 item">
                 <div class="timeline-block">
@@ -247,8 +273,8 @@ function GetMyMural() {
             $c_photo = $ar[ 'photo' ];
             $c_date = $ar[ 'date' ];
             $comment = $ar[ 'comment' ];
-            if(commentedbyme($id_me,$id_comment)){
-               echo '<ul class="comments">
+            if ( commentedbyme( $id_me, $id_comment ) ) {
+                echo '<ul class="comments">
                       <li class="media">
                         <div class="media-left">
                           <a href="">
@@ -270,7 +296,7 @@ function GetMyMural() {
                           <div class="comment-date">' . $c_date . '</div>
                         </div>
                       </li>';
-            }else{
+            } else {
                 echo '<ul class="comments">
                       <li class="media">
                         <div class="media-left">
@@ -286,7 +312,7 @@ function GetMyMural() {
                         </div>
                       </li>';
             }
-            
+
 
         }
         echo '<li class="comment-form">
@@ -307,8 +333,8 @@ function GetMyMural() {
     }
 }
 
-function GetMural($id_profile_friend) {
-    $id_me = base64_decode($_COOKIE['PHP7SESSION']);
+function GetMural( $id_profile_friend ) {
+    $id_me = base64_decode( $_COOKIE[ 'PHP7SESSION' ] );
     $id_mural = $id_profile_friend;
     echo '<div class="timeline row" data-toggle="isotope">
               <div class="col-xs-12 col-md-6 col-lg-4 item">
@@ -343,7 +369,7 @@ function GetMural($id_profile_friend) {
         //
         if ( strtr( $poster, $id_me ) == 0 ) {
             $ds = strtr( $poster, $id_me );
-            if(postedbyme($id_me,$id_post)){
+            if ( postedbyme( $id_me, $id_post ) ) {
                 echo ' <div class="col-xs-12 col-md-6 col-lg-4 item">
                 <div class="timeline-block">
                   <div class="panel panel-default">
@@ -373,8 +399,8 @@ function GetMural($id_profile_friend) {
                               <i class="fa fa-pencil"></i>
                             </a>
                             <ul class="dropdown-menu" role="menu">
-                              <li><a href="#" OnClick="editpost('.$id_post.')">Editar</a></li>
-                              <li><a href="#" OnClick="delpost('.$id_post.')">Eliminar</a></li>
+                              <li><a href="#" OnClick="editpost(' . $id_post . ')">Editar</a></li>
+                              <li><a href="#" OnClick="delpost(' . $id_post . ')">Eliminar</a></li>
                             </ul>
                           </div>
                       <!--<div class="timeline-added-images">
@@ -388,7 +414,7 @@ function GetMural($id_profile_friend) {
                         <i class="fa fa-comments-o"></i> Comentarios
                       </a>
                     </div>';
-            }else{
+            } else {
                 echo ' <div class="col-xs-12 col-md-6 col-lg-4 item">
                 <div class="timeline-block">
                   <div class="panel panel-default">
@@ -426,7 +452,7 @@ function GetMural($id_profile_friend) {
                       </a>
                     </div>';
             }
-            
+
         } else {
             echo ' <div class="col-xs-12 col-md-6 col-lg-4 item">
                 <div class="timeline-block">
