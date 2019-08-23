@@ -82,19 +82,7 @@ function post( $to_post ) {
 
 }
 
-function postmedia( $to_post ) {
-    $my_id = base64_decode( $_COOKIE[ 'PHP7SESSION' ] );
-    $post = $_POST[ 'post_text' ];
-    $media = $_POST[ 'media' ];
-    if ( strcmp( $my_id, "" ) != 0 ) {
-        $sqlquery = "INSERT INTO post(owner,poster,post,date,media) SELECT '{$to_post}','{$my_id}','{$post}',DATE_FORMAT(NOW(),'%d/%m/%Y') as datetoday,'{$media}';";
-        $r = mysqli_query( getDB(), $sqlquery );
-        echo '¡Publicado!';
-    } else {
-        echo "El nombre no puede quedar vacio";
-    }
 
-}
 
 function GetMyMural() {
     $id_me = base64_decode( $_COOKIE[ 'PHP7SESSION' ] );
